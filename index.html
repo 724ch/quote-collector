@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>발췌 수집기 — Quote Collector</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fafaf8; --card:#ffffff; --ink:#1a1a1a; --sub:#6b6b6b;
+    --line:#e6e4df; --accent:#1a1a1a; --hl:#fff6d6; --hl-line:#e8d78a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Pretendard',-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    padding:48px 20px 120px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  header p{color:var(--sub);margin-top:8px;font-size:15px}
+
+  .tabs{display:flex;gap:6px;margin:32px 0 0;border-bottom:1px solid var(--line)}
+  .tab{
+    padding:11px 16px;font-size:14px;font-weight:600;color:var(--sub);
+    background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;
+    margin-bottom:-1px;transition:.15s;
+  }
+  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .panel{display:none;padding:28px 0}
+  .panel.on{display:block}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;margin-bottom:16px;
+  }
+  .card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+  .card .desc{font-size:13.5px;color:var(--sub);margin-bottom:16px}
+
+  .bm{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;
+    font-weight:700;font-size:14px;text-decoration:none;cursor:grab;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);user-select:none;
+  }
+  .bm:active{cursor:grabbing}
+  .hint{font-size:12.5px;color:var(--sub);margin-top:10px}
+  .hint b{color:var(--ink)}
+
+  label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}
+  input[type=text]{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    font-family:inherit;font-size:14px;background:#fff;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--ink)}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
+  .toolbar .count{font-size:13px;color:var(--sub);margin-right:auto}
+  .btn{
+    padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:8px;
+    font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);
+  }
+  .btn:hover{background:#f4f3f0}
+  .btn.danger:hover{background:#fdeceb;border-color:#f0b8b3;color:#c0392b}
+  .search{flex:1 1 180px;min-width:140px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit}
+
+  .quote{
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--hl-line);
+    border-radius:10px;padding:16px 18px;margin-bottom:12px;position:relative;
+  }
+  .quote .q{font-size:15px;line-height:1.7;white-space:pre-wrap}
+  .quote .meta{margin-top:10px;font-size:12px;color:var(--sub);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+  .quote .meta a{color:var(--sub);text-decoration:none;border-bottom:1px solid var(--line)}
+  .quote .meta a:hover{color:var(--ink)}
+  .quote .del{
+    position:absolute;top:12px;right:12px;border:none;background:none;cursor:pointer;
+    color:#c9c6c0;font-size:16px;line-height:1;padding:4px;border-radius:6px;
+  }
+  .quote .del:hover{color:#c0392b;background:#fdeceb}
+  .empty{text-align:center;color:var(--sub);padding:60px 20px;font-size:14px}
+  .empty b{color:var(--ink)}
+
+  /* popup confirm screen */
+  body.popup{padding:0;display:flex;align-items:center;justify-content:center;height:100vh}
+  .confirm{text-align:center}
+  .confirm .check{font-size:34px}
+  .confirm .msg{font-weight:700;margin-top:8px}
+  .confirm .qprev{font-size:12px;color:var(--sub);margin-top:6px;max-width:300px}
+
+  code.snip{
+    display:block;background:#f4f3f0;border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;font-size:11px;color:#555;word-break:break-all;margin-top:12px;
+    font-family:ui-monospace,Menlo,monospace;max-height:90px;overflow:auto;
+  }
+  .ol{margin:14px 0 0 18px;font-size:13.5px;color:var(--sub)}
+  .ol li{margin-bottom:7px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header>
+    <h1>✂️ 발췌 수집기</h1>
+    <p>웹서핑하다 마음에 드는 문장을 드래그 → 북마클릿 한 번 → 출처와 함께 여기에 모입니다. 설치·서버·로그인 없음.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="collect">모은 발췌</button>
+    <button class="tab" data-tab="setup">① 북마클릿 설치</button>
+    <button class="tab" data-tab="obsidian">② 옵시디언으로 보내기</button>
+  </div>
+
+  <!-- 모은 발췌 -->
+  <section class="panel on" id="tab-collect">
+    <div class="toolbar">
+      <span class="count" id="count">0개</span>
+      <input class="search" id="search" type="text" placeholder="검색…">
+      <button class="btn" id="copyAll">📋 전체 복사(md)</button>
+      <button class="btn" id="exportMd">⬇ .md 내보내기</button>
+      <button class="btn danger" id="clearAll">전체 삭제</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <!-- 설치 -->
+  <section class="panel" id="tab-setup">
+    <div class="card">
+      <h3>1단계 · 북마크바에 끌어다 놓기</h3>
+      <p class="desc">아래 버튼을 브라우저 <b>북마크바로 드래그</b>하세요. (북마크바: <b>⌘⇧B</b>로 켜기)</p>
+      <a class="bm" id="bmLink" href="#">✂️ 발췌 담기</a>
+      <p class="hint">드래그가 안 되면 우클릭 → 북마크 추가 후, 아래 코드를 URL에 붙여넣으세요.</p>
+      <code class="snip" id="bmCode"></code>
+    </div>
+    <div class="card">
+      <h3>2단계 · 사용법</h3>
+      <ol class="ol">
+        <li>웹페이지에서 마음에 드는 <b>문장을 드래그해 선택</b>합니다.</li>
+        <li>북마크바의 <b>✂️ 발췌 담기</b>를 클릭합니다.</li>
+        <li>작은 창이 "담겼어요" 깜빡이고 닫힙니다. 계속 읽으세요.</li>
+        <li>이 페이지(<b>모은 발췌</b> 탭)에 출처·날짜와 함께 쌓입니다.</li>
+      </ol>
+      <p class="hint" style="margin-top:14px">💡 데이터는 <b>이 브라우저에만</b> 저장됩니다(localStorage). 백업/이동은 <b>.md 내보내기</b>를 쓰세요.</p>
+    </div>
+  </section>
+
+  <!-- 옵시디언 -->
+  <section class="panel" id="tab-obsidian">
+    <div class="card">
+      <h3>옵시디언 노트에 바로 쌓기</h3>
+      <p class="desc">vault 이름과 노트 경로를 넣으면, 발췌가 해당 노트 끝에 추가되는 북마클릿이 생성됩니다.</p>
+      <label>Vault 이름</label>
+      <input type="text" id="vault" placeholder="예: chanhwi">
+      <label>노트 경로 (.md 제외)</label>
+      <input type="text" id="note" placeholder="예: 03 📥 인박스/발췌모음" value="발췌모음">
+      <a class="bm" id="bmObs" href="#" style="margin-top:18px">✂️ 옵시디언에 담기</a>
+      <p class="hint">⚠️ 기존 노트에 <b>이어 붙이기</b>는 옵시디언 코어 URI(최신 버전) 또는 <b>Advanced URI</b> 플러그인이 있어야 안정적입니다. 안 되면 ① 방식으로 모았다가 <b>전체 복사(md)</b>로 붙여넣는 걸 추천해요.</p>
+      <code class="snip" id="bmObsCode"></code>
+    </div>
+  </section>
+</div>
+
+<script>
+const KEY='quoteCollector.items';
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}};
+const save=a=>localStorage.setItem(KEY,JSON.stringify(a));
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// ---- collector URL (this page, params stripped) ----
+const BASE=location.origin+location.pathname;
+
+// ---- handle incoming capture ----
+const params=new URLSearchParams(location.search);
+const q=params.get('q');
+const isPopup=params.get('popup')==='1';
+
+if(q){
+  const items=load();
+  const now=new Date();
+  items.unshift({
+    quote:q,
+    url:params.get('u')||'',
+    title:params.get('t')||'',
+    date:now.toISOString().slice(0,10),
+    ts:now.toISOString()
+  });
+  save(items);
+  if(isPopup){
+    document.body.classList.add('popup');
+    document.getElementById('app').innerHTML=
+      '<div class="confirm"><div class="check">✅</div><div class="msg">담겼어요</div>'+
+      '<div class="qprev">'+esc(q.slice(0,90))+(q.length>90?'…':'')+'</div></div>';
+    setTimeout(()=>window.close(),850);
+  }else{
+    history.replaceState(null,'',BASE);
+  }
+}
+
+// ---- only run full UI if not a closing popup ----
+if(!isPopup){
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('on');
+  });
+
+  // ---- bookmarklet (mode 1) ----
+  const bmJs="javascript:(function(){var s=(window.getSelection?getSelection().toString():'').trim();"+
+    "if(!s){alert('먼저 문장을 드래그해서 선택하세요');return;}"+
+    "var b='"+BASE+"';var p=b+(b.indexOf('?')>-1?'&':'?')+'q='+encodeURIComponent(s)"+
+    "+'&u='+encodeURIComponent(location.href)+'&t='+encodeURIComponent(document.title)+'&popup=1';"+
+    "window.open(p,'qc','width=380,height=240,left=80,top=80');})();";
+  document.getElementById('bmLink').href=bmJs;
+  document.getElementById('bmCode').textContent=bmJs;
+
+  // ---- obsidian bookmarklet (mode 2) ----
+  function buildObs(){
+    const vault=document.getElementById('vault').value.trim();
+    const note=document.getElementById('note').value.trim()||'발췌모음';
+    const js="javascript:(function(){var s=(window.getSelection?getSelection().toString():'').trim();"+
+      "if(!s){alert('먼저 문장을 드래그해서 선택하세요');return;}"+
+      "var d=new Date().toISOString().slice(0,10);"+
+      "var c='\\n> '+s.replace(/\\n/g,'\\n> ')+'\\n\\u2014 ['+document.title+']('+location.href+') \\u00b7 '+d+'\\n';"+
+      "var u='obsidian://new?vault="+encodeURIComponent(vault)+"&file="+encodeURIComponent(note)+
+      "&append=true&content='+encodeURIComponent(c);window.open(u);})();";
+    document.getElementById('bmObs').href=js;
+    document.getElementById('bmObsCode').textContent=js;
+  }
+  document.getElementById('vault').oninput=buildObs;
+  document.getElementById('note').oninput=buildObs;
+  buildObs();
+
+  // ---- render list ----
+  const listEl=document.getElementById('list');
+  const countEl=document.getElementById('count');
+  let filter='';
+
+  function fmtMd(items){
+    return items.map(it=>{
+      let s='> '+it.quote.replace(/\n/g,'\n> ');
+      const src=it.title||it.url;
+      if(src) s+='\n— '+(it.url?('['+(it.title||it.url)+']('+it.url+')'):it.title)+' · '+it.date;
+      return s;
+    }).join('\n\n');
+  }
+
+  function render(){
+    const items=load();
+    const shown=filter
+      ? items.filter(it=>(it.quote+it.title+it.url).toLowerCase().includes(filter))
+      : items;
+    countEl.textContent=items.length+'개'+(filter&&shown.length!==items.length?(' · '+shown.length+' 검색'):'');
+    if(!shown.length){
+      listEl.innerHTML='<div class="empty">'+(items.length
+        ?'검색 결과가 없어요.'
+        :'아직 모은 발췌가 없어요.<br><b>① 북마클릿 설치</b> 탭에서 시작하세요.')+'</div>';
+      return;
+    }
+    listEl.innerHTML=shown.map(it=>{
+      const real=load().indexOf(it); // index in full array
+      const src=it.title?esc(it.title):(it.url?esc(it.url):'');
+      const link=it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+(src||esc(it.url))+'</a>':(src||'');
+      return '<div class="quote">'+
+        '<button class="del" data-i="'+real+'" title="삭제">×</button>'+
+        '<div class="q">'+esc(it.quote)+'</div>'+
+        '<div class="meta">'+(link?'🔗 '+link:'')+'<span>'+it.date+'</span></div>'+
+      '</div>';
+    }).join('');
+    listEl.querySelectorAll('.del').forEach(b=>b.onclick=()=>{
+      const items=load(); items.splice(+b.dataset.i,1); save(items); render();
+    });
+  }
+
+  document.getElementById('search').oninput=e=>{filter=e.target.value.toLowerCase().trim();render();};
+  document.getElementById('clearAll').onclick=()=>{
+    if(confirm('모은 발췌를 전부 삭제할까요? 되돌릴 수 없어요.')){save([]);render();}
+  };
+  document.getElementById('copyAll').onclick=()=>{
+    const md=fmtMd(load());
+    navigator.clipboard.writeText(md).then(()=>{
+      const b=document.getElementById('copyAll');const o=b.textContent;
+      b.textContent='✓ 복사됨';setTimeout(()=>b.textContent=o,1200);
+    });
+  };
+  document.getElementById('exportMd').onclick=()=>{
+    const md='# 발췌 모음\n\n'+fmtMd(load())+'\n';
+    const blob=new Blob([md],{type:'text/markdown'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='발췌모음.md';a.click();
+  };
+
+  // live update when popup adds an item in another window
+  window.addEventListener('storage',e=>{if(e.key===KEY)render();});
+
+  render();
+}
+</script>
+</body>
+</html>
