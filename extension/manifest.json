@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "발췌 담기",
+  "version": "1.0",
+  "description": "선택한 문장을 우클릭으로 발췌 수집기에 담습니다.",
+  "permissions": ["contextMenus"],
+  "background": { "service_worker": "background.js" }
+}
