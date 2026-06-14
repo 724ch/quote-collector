@@ -1,10 +1,10 @@
-// 발췌 수집기 주소 (배포된 GitHub Pages)
+// 하이라이터 주소 (배포된 GitHub Pages)
 const COLLECTOR = "https://724ch.github.io/quote-collector/";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "clip",
-    title: "✂️ 발췌 담기",
+    title: "✨ 발췌 담기",
     contexts: ["selection"]
   });
 });

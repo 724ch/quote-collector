@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>발췌 수집기 — Quote Collector</title>
+<title>하이라이터 — Highlighter</title>
+<link rel="icon" type="image/png" href="extension/icons/icon128.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
   :root{
     --bg:#fafaf8; --card:#ffffff; --ink:#1a1a1a; --sub:#6b6b6b;
-    --line:#e6e4df; --accent:#1a1a1a; --hl:#fff6d6; --hl-line:#e8d78a;
+    --line:#e6e4df; --accent:#16a34a; --hl:#fff6d6; --hl-line:#e8d78a;
     --radius:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -29,7 +30,7 @@
     background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;
     margin-bottom:-1px;transition:.15s;
   }
-  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
   .panel{display:none;padding:28px 0}
   .panel.on{display:block}
 
@@ -42,9 +43,9 @@
 
   .bm{
     display:inline-flex;align-items:center;gap:8px;
-    background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;
+    background:var(--accent);color:#fff;padding:11px 20px;border-radius:10px;
     font-weight:700;font-size:14px;text-decoration:none;cursor:grab;
-    box-shadow:0 2px 8px rgba(0,0,0,.12);user-select:none;
+    box-shadow:0 2px 8px rgba(22,163,74,.25);user-select:none;
   }
   .bm:active{cursor:grabbing}
   .hint{font-size:12.5px;color:var(--sub);margin-top:10px}
@@ -55,7 +56,7 @@
     width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
     font-family:inherit;font-size:14px;background:#fff;
   }
-  input[type=text]:focus{outline:none;border-color:var(--ink)}
+  input[type=text]:focus{outline:none;border-color:var(--accent)}
 
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
   .toolbar .count{font-size:13px;color:var(--sub);margin-right:auto}
@@ -102,7 +103,7 @@
 <body>
 <div class="wrap" id="app">
   <header>
-    <h1>✂️ 발췌 수집기</h1>
+    <h1><svg width="26" height="26" viewBox="0 0 100 100" style="vertical-align:-4px;margin-right:4px" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#15803d"/></linearGradient></defs><path d="M50 8 Q57 43 92 50 Q57 57 50 92 Q43 57 8 50 Q43 43 50 8 Z" fill="url(#hg)"/><path d="M82 12 Q84 23 95 25 Q84 27 82 38 Q80 27 69 25 Q80 23 82 12 Z" fill="#4ade80"/></svg>하이라이터</h1>
     <p>웹서핑하다 마음에 드는 문장을 드래그 → 북마클릿 한 번 → 출처와 함께 여기에 모입니다. 설치·서버·로그인 없음.</p>
   </header>
 
@@ -129,7 +130,7 @@
     <div class="card">
       <h3>1단계 · 북마크바에 끌어다 놓기</h3>
       <p class="desc">아래 버튼을 브라우저 <b>북마크바로 드래그</b>하세요. (북마크바: <b>⌘⇧B</b>로 켜기)</p>
-      <a class="bm" id="bmLink" href="#">✂️ 발췌 담기</a>
+      <a class="bm" id="bmLink" href="#">✨ 발췌 담기</a>
       <p class="hint">드래그가 안 되면 우클릭 → 북마크 추가 후, 아래 코드를 URL에 붙여넣으세요.</p>
       <code class="snip" id="bmCode"></code>
     </div>
@@ -137,7 +138,7 @@
       <h3>2단계 · 사용법</h3>
       <ol class="ol">
         <li>웹페이지에서 마음에 드는 <b>문장을 드래그해 선택</b>합니다.</li>
-        <li>북마크바의 <b>✂️ 발췌 담기</b>를 클릭합니다.</li>
+        <li>북마크바의 <b>✨ 발췌 담기</b>를 클릭합니다.</li>
         <li>작은 창이 "담겼어요" 깜빡이고 닫힙니다. 계속 읽으세요.</li>
         <li>이 페이지(<b>모은 발췌</b> 탭)에 출처·날짜와 함께 쌓입니다.</li>
       </ol>
@@ -154,7 +155,7 @@
       <input type="text" id="vault" placeholder="예: chanhwi">
       <label>노트 경로 (.md 제외)</label>
       <input type="text" id="note" placeholder="예: 03 📥 인박스/발췌모음" value="발췌모음">
-      <a class="bm" id="bmObs" href="#" style="margin-top:18px">✂️ 옵시디언에 담기</a>
+      <a class="bm" id="bmObs" href="#" style="margin-top:18px">✨ 옵시디언에 담기</a>
       <p class="hint">⚠️ 기존 노트에 <b>이어 붙이기</b>는 옵시디언 코어 URI(최신 버전) 또는 <b>Advanced URI</b> 플러그인이 있어야 안정적입니다. 안 되면 ① 방식으로 모았다가 <b>전체 복사(md)</b>로 붙여넣는 걸 추천해요.</p>
       <code class="snip" id="bmObsCode"></code>
     </div>

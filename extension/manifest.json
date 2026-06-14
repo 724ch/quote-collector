@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "발췌 담기",
+  "name": "하이라이터",
   "version": "1.0",
-  "description": "선택한 문장을 우클릭으로 발췌 수집기에 담습니다.",
+  "description": "선택한 문장을 우클릭으로 하이라이터에 담습니다.",
   "permissions": ["contextMenus"],
-  "background": { "service_worker": "background.js" }
+  "background": { "service_worker": "background.js" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }
